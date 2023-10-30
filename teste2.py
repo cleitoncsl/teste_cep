@@ -1,31 +1,29 @@
+import os
 import pandas as pd
 from time import sleep
 from playwright.sync_api import expect, sync_playwright
 from datetime import datetime
 
 url = 'https://buscacepinter.correios.com.br/app/faixa_cep_uf_localidade/index.php'
-path = f'C:\Temp\CEP'
-folder = f'csv'
-file_path = f'{path}\{folder}'
+path = os.path.dirname(r'C:\Users\cleit\OneDrive\Documentos\TRABALHO\Alvorada\PYTHON\teste_cep\csv\\')
 
 ufs = ['AC', 'AL', 'AM']
 #ufs = ['AC']
 
 if __name__ == "__main__":
 
+    lista_UF = []
+    Lista_faixa_UF_CEP = []
+    lista_localidade = []
+    lista_faixa_cep = []
+    lista_situacao = []
+    lista_tipo_faixa = []
+    print('lukao')
 
 
     def GetData(rows, UF, FaixaCEP):
         linha_campo_uf_cep = UF
         linha_campo_faixa_cep = FaixaCEP
-
-        lista_UF = []
-        Lista_faixa_UF_CEP = []
-        lista_localidade = []
-        lista_faixa_cep = []
-        lista_situacao = []
-        lista_tipo_faixa = []
-
 
         index = 0
         qtde_linhas = rows.count() - 2
@@ -62,10 +60,11 @@ if __name__ == "__main__":
             data_frame = df
             print(df)
 
-            with pd.ExcelWriter(f"C:\Temp\CEP\teste.xlsx",
+            arquivo = os.path.join(path, 'arquivo.xlsx')
+
+            with pd.ExcelWriter(arquivo,
                                 engine="xlsxwriter") as writer:
                 data_frame.to_excel(writer)
-
 
             index += 1
             print(
@@ -81,7 +80,6 @@ if __name__ == "__main__":
         current_timestamp = datetime.now().strftime('%d-%m-%Y_%H-%M-%S')
         print('-----Fim-----')
         page.screenshot(path='result_' + current_timestamp + '.png', full_page=True)
-
 
         ClickNext('Próximo', rows, UF, FaixaCEP)
 
@@ -106,6 +104,7 @@ if __name__ == "__main__":
 
         GetData(linhas, linha_campo_uf_cep, linha_campo_faixa_cep)
 
+
     def ClickNext(Campo, rows, UF, FaixaCEP):
 
         nome_campos = Campo
@@ -115,31 +114,32 @@ if __name__ == "__main__":
             btn_proximo = page.get_by_role("link", name=nome_campos)
             check = len(btn_proximo.text_content(timeout=100))
 
-            if check > 0:
+            if page.get_by_role("link", name=nome_campos) != None:
                 page.get_by_role("link", name=nome_campos).click(timeout=100)
 
                 sleep(0.4)
 
                 btn_prox = True
                 print("proxima pagina")
-                CheckStatus(True, rows, UF, FaixaCEP)
+                CheckStatus(btn_prox, rows, UF, FaixaCEP)
 
-        #except Exception as error:
+        # except Exception as error:
 
         except:
             btn_prox = False
-            #print(error)
-            #print(f'Estado não possui mais municipios')
+            # print(error)
+            # print(f'Estado não possui mais municipios')
 
-            #testando#
-            #CheckStatus(False, rows, UF, FaixaCEP)
+            # testando#
+            # CheckStatus(False, rows, UF, FaixaCEP)
 
             print(f'Estado não possui mais municipios')
             print(f'Próximo Estado')
-            #page.get_by_role("button", name="Nova Busca").click()
+            # page.get_by_role("button", name="Nova Busca").click()
 
-            #testando"
-            #CheckStatus(False, rows, UF, FaixaCEP)
+            # testando"
+            # CheckStatus(False, rows, UF, FaixaCEP)
+
 
     def CheckStatus(status, rows, UF, FaixaCEP):
         if status == True:
@@ -174,4 +174,3 @@ if __name__ == "__main__":
     except Exception as error:
         print(error)
         print(f'erro -> {error}')
-
